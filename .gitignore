@@ -1,0 +1,7 @@
+*.a
+*.bin
+*.hex
+*.o
+/ExBasRom.zip
+/mc09disasm
+/mc09emulator

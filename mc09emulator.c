@@ -216,15 +216,18 @@ static mc6809byte__t cpu_read(
 )
 {
   struct userdata *ud;
+#if 0
   char             inst[128];
   char             regs[128];
-  
+#endif
+
   assert(cpu       != NULL);
   assert(cpu->user != NULL);
   
   ud = cpu->user;
   assert(ud->memory != NULL);
-  
+ 
+#if 0 
   if (cpu->instpc == addr)      /* start of an instruction */
   {
     ud->dis.pc = addr;
@@ -233,8 +236,40 @@ static mc6809byte__t cpu_read(
     mc6809dis_registers(cpu,regs,sizeof(regs));
     printf("%s | %s\n",regs,inst);
   }
-  
+#endif
+
+#if 1
+  mc6809byte__t b;
+  switch (addr) {
+  case 0xa000:
+    b = 3;
+    break;
+  case 0xa001:
+    {
+      int c = getchar();
+      switch (c) {
+      case '\n':
+        b = '\r';
+        break;
+      case 0x7f:
+        b = '\b';
+        break;
+      case EOF:
+        exit(EXIT_SUCCESS);
+      default:
+        b = c & 0xff;
+        break;
+      }
+    }
+    break;
+  default:
+    b = ud->memory[addr];
+    break;
+  }
+  return b;
+#else
   return ud->memory[addr];
+#endif
 }
 
 /************************************************************************/
@@ -254,9 +289,30 @@ static void cpu_write(
   
   assert(ud->memory   != NULL);
   assert(ud->readonly != NULL);
-  
+
+#if 1
+  switch (addr) {
+  case 0xa000:
+    break;
+  case 0xa001:
+    switch (b) {
+    case '\r':
+      b = '\n';
+      break;
+    case '\n':
+      return;
+    }
+    putchar(b);
+    break;
+  default:
+    if (!ud->readonly[addr])
+      ud->memory[addr] = b;
+    break;
+  }
+#else
   if (!ud->readonly[addr])
     ud->memory[addr] = b;
+#endif
 }
 
 /************************************************************************/
