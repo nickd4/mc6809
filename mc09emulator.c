@@ -21,10 +21,13 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <assert.h>
 
 #include "mc6809.h"
 #include "mc6809dis.h"
+
+#define TRACE 1
 
 /*************************************************************************/
 
@@ -60,7 +63,8 @@ int main(int argc,char *argv[])
     fprintf(stderr,"\t           and r = r (for read only)\n");
     return EXIT_FAILURE;
   }
-  
+
+  memset(&ud, 0, sizeof(struct userdata));
   ud.memory = malloc(65536uL * sizeof(mc6809byte__t));
   if (ud.memory == NULL)
   {
@@ -216,7 +220,7 @@ static mc6809byte__t cpu_read(
 )
 {
   struct userdata *ud;
-#if 0
+#if TRACE
   char             inst[128];
   char             regs[128];
 #endif
@@ -226,16 +230,39 @@ static mc6809byte__t cpu_read(
   
   ud = cpu->user;
   assert(ud->memory != NULL);
- 
-#if 0 
+
+#if TRACE
   if (cpu->instpc == addr)      /* start of an instruction */
   {
     ud->dis.pc = addr;
     mc6809dis_step(&ud->dis,cpu);
     mc6809dis_format(&ud->dis,inst,sizeof(inst));
     mc6809dis_registers(cpu,regs,sizeof(regs));
-    printf("%s | %s\n",regs,inst);
+    fprintf(stderr, "%s | %s\n",regs,inst);
   }
+#endif
+
+#if 1 // sbc09 style trace
+  if (cpu->instpc == addr)
+    fprintf(
+      stderr,
+      "pc=%04x x=%04x y=%04x u=%04x s=%04x a=%02x b=%02x cc=%02x\n",
+      addr,
+      cpu->X.w,
+      cpu->Y.w,
+      cpu->U.w,
+      cpu->S.w,
+      cpu->A,
+      cpu->B,
+      (cpu->cc.e << 7) |
+      (cpu->cc.f << 6) |
+      //(cpu->cc.h << 5) |
+      (cpu->cc.i << 4) |
+      (cpu->cc.n << 3) |
+      (cpu->cc.z << 2) |
+      (cpu->cc.v << 1) |
+      cpu->cc.c
+    );
 #endif
 
 #if 1
