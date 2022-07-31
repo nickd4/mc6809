@@ -27,7 +27,9 @@
 #include "mc6809.h"
 #include "mc6809dis.h"
 
-#define TRACE 1
+#define TRACE 0
+#define REG_TRACE 1
+#define MEM_TRACE 1
 
 /*************************************************************************/
 
@@ -242,7 +244,7 @@ static mc6809byte__t cpu_read(
   }
 #endif
 
-#if 1 // sbc09 style trace
+#if 0 // sbc09 style trace
   if (cpu->instpc == addr)
     fprintf(
       stderr,
@@ -261,6 +263,36 @@ static mc6809byte__t cpu_read(
       (cpu->cc.n << 3) |
       (cpu->cc.z << 2) |
       (cpu->cc.v << 1) |
+      cpu->cc.c
+    );
+#endif
+
+#if REG_TRACE // emu_6809 style trace
+  if (cpu->instpc == addr)
+    fprintf(
+      stderr,
+      "pc=%04x d=%04x u=%04x s=%04x x=%04x y=%04x cc=%02x ef=%d ff=%d hf=%d if=%d nf=%d zf=%d vf=%d cf=%d\n",
+      addr,
+      cpu->d.w,
+      cpu->U.w,
+      cpu->S.w,
+      cpu->X.w,
+      cpu->Y.w,
+      (cpu->cc.e << 7) |
+      (cpu->cc.f << 6) |
+      (cpu->cc.h << 5) |
+      (cpu->cc.i << 4) |
+      (cpu->cc.n << 3) |
+      (cpu->cc.z << 2) |
+      (cpu->cc.v << 1) |
+      cpu->cc.c,
+      cpu->cc.e,
+      cpu->cc.f,
+      cpu->cc.h,
+      cpu->cc.i,
+      cpu->cc.n,
+      cpu->cc.z,
+      cpu->cc.v,
       cpu->cc.c
     );
 #endif
@@ -293,6 +325,9 @@ static mc6809byte__t cpu_read(
     b = ud->memory[addr];
     break;
   }
+#if MEM_TRACE // emu_6809 style trace
+  fprintf(stderr, "addr=%04x rd=%02x\n", addr, b);
+#endif
   return b;
 #else
   return ud->memory[addr];
@@ -318,6 +353,9 @@ static void cpu_write(
   assert(ud->readonly != NULL);
 
 #if 1
+#if MEM_TRACE // emu_6809 style trace
+  fprintf(stderr, "addr=%04x wr=%02x\n", addr, b);
+#endif
   switch (addr) {
   case 0xa000:
     break;

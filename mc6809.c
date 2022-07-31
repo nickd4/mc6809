@@ -373,7 +373,7 @@ int mc6809_step(mc6809__t *cpu)
     case 0x0F:
          cpu->cycles += 5;
          ea = mc6809_direct(cpu);
-         (*cpu->read) (cpu,ea,false);
+         //(*cpu->read) (cpu,ea,false);
          (*cpu->write)(cpu,ea,op_clr(cpu));
          break;
          
@@ -1261,7 +1261,7 @@ int mc6809_step(mc6809__t *cpu)
     case 0x6F:
          cpu->cycles += 5;
          ea = mc6809_indexed(cpu);
-         (*cpu->read) (cpu,ea,false);
+         //(*cpu->read) (cpu,ea,false);
          (*cpu->write)(cpu,ea,op_clr(cpu));
          break;
          
@@ -1350,7 +1350,7 @@ int mc6809_step(mc6809__t *cpu)
     case 0x7F:
          cpu->cycles += 6;
          ea = mc6809_extended(cpu);
-         (*cpu->read) (cpu,ea,false);
+         //(*cpu->read) (cpu,ea,false);
          (*cpu->write)(cpu,ea,op_clr(cpu));
          break;
          
